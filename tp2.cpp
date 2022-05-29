@@ -9,15 +9,13 @@ int n, m, q;
 
 // Dado um vertice u, gr[u] eh um vetor com os pares {v, w}, sendo v um vertice para o qual u vai por
 // uma aresta de w de peso.
-vector<pair<int, int>> gr[100];
+vector<vector<pair<int, int>>> gr;
 
-// Minimo aceito por aresta e destino.
-int minim, destination;
 // Marcador de vertices ja visitados pra DFS.
 vector<bool> vis;
 // Retorna true se eh possivel alcancar o vertice destination saindo de i e sem visitar vertices jah
 // visitados, false caso contrario.
-bool dfs(int i) {
+bool dfs(int i, int destination, int minim) {
     if (i == destination)
         return true; 
     if (vis[i])
@@ -25,7 +23,7 @@ bool dfs(int i) {
     vis[i] = true;
     for (pair<int, int> pa : gr[i])
         // eh preciso checar se o tamanho da aresta eh pelo menos o minimo antes de andar nela.
-        if (pa.second >= minim && dfs(pa.first))
+        if (pa.second >= minim && dfs(pa.first, destination, minim))
             return true;
     return false;
 }
@@ -38,7 +36,7 @@ bool dfs(int i) {
 // Portanto podemos usar busca binária para encontrar o maior valor de k tal que eh possivel sair do
 // ponto inicial e chegar ao final usando apenas arestas de tamanho maior ou igual a k, que eh
 // precisamente o que queremos (veja a documentação).
-int bin_search(int from) {
+int bin_search(int from, int to) {
     int l = 1, r = 100000;
 
     while (l != r) {
@@ -46,10 +44,8 @@ int bin_search(int from) {
         // resetando o vetor de visitados:
         vis.clear();
         vis.resize(n, false);
-        // setando chute de menor aresta:
-        minim = mid;
         // caso seja possivel com todas arestas >= isso, tiramos as menores do intervalo de teste.
-        if (dfs(from))
+        if (dfs(from, to, mid))
             l = mid;
         // caso contrario, tiramos esse tamanho e maiores do intervalo de teste.
         else
@@ -59,8 +55,9 @@ int bin_search(int from) {
 }
 
 int main() {
-    // lendo tamanhos:
+    // lendo tamanhos e ajustando tamanho do grafo:
     cin >> n >> m >> q;
+    gr.resize(n);
     // lendo grafo:
     for (int i = 0; i < m; i++) {
         int u, v, w;
@@ -71,7 +68,7 @@ int main() {
     for (int i = 0; i < q; i++) {
         int a, b;
         cin >> a >> b;
-        destination = b-1;
-        cout << bin_search(a - 1) << endl;
+        // ajustando ponto de destino
+        cout << bin_search(a - 1, b-1) << endl;
     }
 }
